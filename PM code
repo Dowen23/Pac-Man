@@ -1,0 +1,2302 @@
+#include <iostream>
+#include <conio.h>
+#include <windows.h>
+#include <thread>
+#include <ctime>
+#include <random>
+
+#define KEY_UP 72
+#define KEY_DOWN 80
+#define KEY_LEFT 75
+#define KEY_RIGHT 77
+
+using namespace std;
+
+char anArray[61][20];      // MAIN ARRAY
+int a = 30;				   // PAC MAN X 
+int b = 4;				   // PAC MAN Y 
+
+int c1 = 30;			   // GHOST X 2
+int d1 = 16;			   // GHOST Y 2
+int e1;					   // X STORAGE 2
+int f1;					   // Y STORAGE 2
+
+int c2 = 12;			   // GHOST X 2
+int d2 = 9;			       // GHOST Y 2
+int e2;					   // X STORAGE 2
+int f2;					   // Y STORAGE 2
+
+int c3 = 48;			   // GHOST X 3
+int d3 = 9;			       // GHOST Y 3
+int e3;					   // X STORAGE 3
+int f3;					   // Y STORAGE 3
+
+int c4 = 30;			   // GHOST X 3
+int d4 = 1;			       // GHOST Y 3
+int e4;					   // X STORAGE 3
+int f4;					   // Y STORAGE 3
+
+int dir1 = 1;			   // DIRECTION AVAILABILITY - LEFT
+int dir2 = 1;			   // DIRECTION AVAILABILITY - RIGHT
+int dir3 = 1;			   // DIRECTION AVAILABILITY - UP
+int dir4 = 1;			   // DIRECTION AVAILABILITY - DOWN
+int dirt = 0;			   // SUM OF DIR
+int pg1 = 0;			   // "PELLET GHOST" - IS THE GHOST OVER THE PELLET?
+int pg2 = 0;			   // "PELLET GHOST" - IS THE GHOST OVER THE PELLET? 2
+int pg3 = 0;			   // "PELLET GHOST" - IS THE GHOST OVER THE PELLET? 3
+int pg4 = 0;			   // "PELLET GHOST" - IS THE GHOST OVER THE PELLET? 4
+int ld1 = 1;			   // "LAST DIRECTION" - WHICH WAY DID THE GHOST GO LAST?
+int ld2 = 2;			   // "LAST DIRECTION" - WHICH WAY DID THE GHOST GO LAST? 2
+int ld3 = 1;			   // "LAST DIRECTION" - WHICH WAY DID THE GHOST GO LAST? 3
+int ld4 = 4;			   // "LAST DIRECTION" - WHICH WAY DID THE GHOST GO LAST? 4
+int dir = 0;               // "Direction"
+int score = 0;			   // SCORE
+int pCount = 109;		   // "PELLET COUNT" - HOW MANY PELLETS LEFT?
+int lives = 3;			   // Lives remaining 
+char pel = 248;			   // PELLET ASCII VALUE
+char wall = 178;		   // WALL ASCII VALUE
+char ghost = 177;		   // GHOST ASCII VALUE
+int x;					   // GOTOXY X VALUE
+int y;					   // GOTOCY Y VALUE
+void gotoxy(int, int);	   // GOTOXY
+
+
+void control()
+{
+	if (GetAsyncKeyState(VK_UP))
+	{
+		anArray[a][b] = 0;
+		b = b - 1;
+		if (anArray[a][b] == wall)
+		{
+			b = b + 1;
+		}
+
+		if (anArray[a][b] == pel)
+		{
+			score = score + 10;
+			pCount = pCount - 1;
+		}
+		anArray[a][b] = 60;
+
+	}
+	if (GetAsyncKeyState(VK_DOWN))
+	{
+		anArray[a][b] = 0;
+		b = b + 1;
+		if (anArray[a][b] == wall)
+		{
+			b = b - 1;
+		}
+
+		if (anArray[a][b] == pel)
+		{
+			score = score + 10;
+			pCount = pCount - 1;
+		}
+		anArray[a][b] = 60;
+
+	}
+	if (GetAsyncKeyState(VK_LEFT))
+	{
+		anArray[a][b] = 0;
+		a = a - 2;
+		if (anArray[a][b] == wall)
+		{
+			a = a + 2;
+		}
+
+		if (anArray[a][b] == pel)
+		{
+			score = score + 10;
+			pCount = pCount - 1;
+		}
+		anArray[a][b] = 60;
+
+	}
+	if (GetAsyncKeyState(VK_RIGHT))
+	{
+		anArray[a][b] = 0;
+		a = a + 2;
+		if (anArray[a][b] == wall)
+		{
+			a = a - 2;
+		}
+		if (anArray[a][b] == pel)
+		{
+			score = score + 10;
+			pCount = pCount - 1;
+		}
+		anArray[a][b] = 60;
+	}
+
+	if (GetAsyncKeyState(VK_ESCAPE))
+	{
+		exit(0);
+	}
+}
+
+//Ghost direction
+// 1 = Left
+// 2 = Right
+// 3 = Up
+// 4 = Down
+
+void Ghost()
+{
+	e1 = c1;
+	f1 = d1;
+	if (pg1 == 0)
+	{
+		anArray[c1][d1] = 0;
+	}
+	if (pg1 == 1)
+	{
+		anArray[c1][d1] = pel;
+		pg1 = 0;
+	}
+
+	// LAST DIRECTION == LEFT
+
+	if (ld1 == 1)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // UP
+		{
+			dir = 1;
+			d1 = d1 - 1;
+			ld1 = 7;
+			if (anArray[c1][d1] == wall)
+			{
+				c1 = e1;
+				d1 = f1;
+				ld1 = 1;
+			}
+		}
+		if (random == 2) // DOWN
+		{
+			dir = 2;
+			d1 = d1 + 1;
+			ld1 = 8;
+			if (anArray[c1][d1] == wall)
+			{
+				c1 = e1;
+				d1 = f1;
+				ld1 = 1;
+			}
+		}
+		if (e1 == c1)
+		{
+			if (f1 == d1)
+			{
+				c1 = c1 - 2; // LEFT
+				ld1 = 5;
+				if (anArray[c1][d1] == wall)
+				{
+					c1 = e1;
+					d1 = f1;
+					if (dir == 1) // DOWN
+					{
+						d1 = d1 + 1;
+						ld1 = 8;
+						if (anArray[c1][d1] == wall)
+						{
+							d1 = d1 - 2;
+							ld1 = 7;
+						}
+					}
+					if (dir == 2) // UP
+					{
+						d1 = d1 - 1;
+						ld1 = 7;
+						if (anArray[c1][d1] == wall)
+						{
+							d1 = d1 + 2;
+							ld1 = 8;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	// LAST DIRECTION == RIGHT
+
+	if (ld1 == 2)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // UP
+		{
+			dir = 1;
+			d1 = d1 - 1;
+			ld1 = 7;
+			if (anArray[c1][d1] == wall)
+			{
+				c1 = e1;
+				d1 = f1;
+				ld1 = 2;
+			}
+		}
+		if (random == 2) // DOWN
+		{
+			dir = 2;
+			d1 = d1 + 1;
+			ld1 = 8;
+			if (anArray[c1][d1] == wall)
+			{
+				c1 = e1;
+				d1 = f1;
+				ld1 = 2;
+			}
+		}
+		if (e1 == c1)
+		{
+			if (f1 == d1)
+			{
+				c1 = c1 + 2; // RIGHT
+				ld1 = 6;
+				if (anArray[c1][d1] == wall)
+				{
+					c1 = e1;
+					d1 = f1;
+					if (dir == 1) // DOWN
+					{
+						d1 = d1 + 1;
+						ld1 = 8;
+						if (anArray[c1][d1] == wall)
+						{
+							d1 = d1 - 2;
+							ld1 = 7;
+						}
+					}
+					if (dir == 2) // UP
+					{
+						d1 = d1 - 1;
+						ld1 = 7;
+						if (anArray[c1][d1] == wall)
+						{
+							d1 = d1 + 2;
+							ld1 = 8;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// LAST DIRECTION == UP
+
+	if (ld1 == 3)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // LEFT
+		{
+			dir = 1;
+			c1 = c1 - 2;
+			ld1 = 5;
+			if (anArray[c1][d1] == wall)
+			{
+				c1 = e1;
+				d1 = f1;
+				ld1 = 3;
+			}
+		}
+		if (random == 2) // RIGHT
+		{
+			dir = 2;
+			c1 = c1 + 2;
+			ld1 = 6;
+			if (anArray[c1][d1] == wall)
+			{
+				c1 = e1;
+				d1 = f1;
+				ld1 = 3;
+			}
+		}
+		if (e1 == c1)
+		{
+			if (f1 == d1)
+			{
+				d1 = d1 - 1; // UP
+				ld1 = 7;
+				if (anArray[c1][d1] == wall)
+				{
+					c1 = e1;
+					d1 = f1;
+					if (dir == 1) // RIGHT
+					{
+						c1 = c1 + 2;
+						ld1 = 6;
+						if (anArray[c1][d1] == wall)
+						{
+							c1 = c1 - 4;
+							ld1 = 5;
+						}
+					}
+					if (dir == 2) // LEFT
+					{
+						c1 = c1 - 2;
+						ld1 = 5;
+						if (anArray[c1][d1] == wall)
+						{
+							c1 = c1 + 4;
+							ld1 = 6;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// LAST DIRECTION == DOWN
+
+	if (ld1 == 4)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // LEFT
+		{
+			dir = 1;
+			c1 = c1 - 2;
+			ld1 = 5;
+			if (anArray[c1][d1] == wall)
+			{
+				c1 = e1;
+				d1 = f1;
+				ld1 = 4;
+			}
+		}
+		if (random == 2) // RIGHT
+		{
+			dir = 2;
+			c1 = c1 + 2;
+			ld1 = 6;
+			if (anArray[c1][d1] == wall)
+			{
+				c1 = e1;
+				d1 = f1;
+				ld1 = 4;
+			}
+		}
+		if (e1 == c1)
+		{
+			if (f1 == d1)
+			{
+				d1 = d1 + 1; // DOWN
+				ld1 = 8;
+				if (anArray[c1][d1] == wall)
+				{
+					c1 = e1;
+					d1 = f1;
+					if (dir == 1) // RIGHT
+					{
+						c1 = c1 + 2;
+						ld1 = 6;
+						if (anArray[c1][d1] == wall)
+						{
+							c1 = c1 - 4;
+							ld1 = 7;
+						}
+					}
+					if (dir == 2) // LEFT
+					{
+						c1 = c1 - 2;
+						ld1 = 5;
+						if (anArray[c1][d1] == wall)
+						{
+							c1 = c1 + 4;
+							ld1 = 6;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	if (anArray[c1][d1] == pel)
+	{
+		pg1 = 1;
+	}
+
+
+	anArray[c1][d1] = ghost;
+	if (ld1 == 5) // LEFT
+	{
+		ld1 = 1;
+	}
+	if (ld1 == 6) //RIGHT
+	{
+		ld1 = 2;
+	}
+	if (ld1 == 7) // UP
+	{
+		ld1 = 3;
+	}
+	if (ld1 == 8) // DOWN
+	{
+		ld1 = 4;
+	}
+}
+
+void Ghost2()
+{
+	e2 = c2;
+	f2 = d2;
+	if (pg2 == 0)
+	{
+		anArray[c2][d2] = 0;
+	}
+	if (pg2 == 1)
+	{
+		anArray[c2][d2] = pel;
+		pg2 = 0;
+	}
+
+	// LAST DIRECTION == LEFT
+
+	if (ld2 == 1)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // UP
+		{
+			dir = 1;
+			d2 = d2 - 1;
+			ld2 = 7;
+			if (anArray[c2][d2] == wall)
+			{
+				c2 = e2;
+				d2 = f2;
+				ld2 = 1;
+			}
+		}
+		if (random == 2) // DOWN
+		{
+			dir = 2;
+			d2 = d2 + 1;
+			ld2 = 8;
+			if (anArray[c2][d2] == wall)
+			{
+				c2 = e2;
+				d2 = f2;
+				ld2 = 1;
+			}
+		}
+		if (e2 == c2)
+		{
+			if (f2 == d2)
+			{
+				c2 = c2 - 2; // LEFT
+				ld2 = 5;
+				if (anArray[c2][d2] == wall)
+				{
+					c2 = e2;
+					d2 = f2;
+					if (dir == 1) // DOWN
+					{
+						d2 = d2 + 1;
+						ld2 = 8;
+						if (anArray[c2][d2] == wall)
+						{
+							d2 = d2 - 2;
+							ld2 = 7;
+						}
+					}
+					if (dir == 2) // UP
+					{
+						d2 = d2 - 1;
+						ld2 = 7;
+						if (anArray[c2][d2] == wall)
+						{
+							d2 = d2 + 2;
+							ld2 = 8;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	// LAST DIRECTION == RIGHT
+
+	if (ld2 == 2)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // UP
+		{
+			dir = 1;
+			d2 = d2 - 1;
+			ld2 = 7;
+			if (anArray[c2][d2] == wall)
+			{
+				c2 = e2;
+				d2 = f2;
+				ld2 = 2;
+			}
+		}
+		if (random == 2) // DOWN
+		{
+			dir = 2;
+			d2 = d2 + 1;
+			ld2 = 8;
+			if (anArray[c2][d2] == wall)
+			{
+				c2 = e2;
+				d2 = f2;
+				ld2 = 2;
+			}
+		}
+		if (e2 == c2)
+		{
+			if (f2 == d2)
+			{
+				c2 = c2 + 2; // RIGHT
+				ld2 = 6;
+				if (anArray[c2][d2] == wall)
+				{
+					c2 = e2;
+					d2 = f2;
+					if (dir == 1) // DOWN
+					{
+						d2 = d2 + 1;
+						ld2 = 8;
+						if (anArray[c2][d2] == wall)
+						{
+							d2 = d2 - 2;
+							ld2 = 7;
+						}
+					}
+					if (dir == 2) // UP
+					{
+						d2 = d2 - 1;
+						ld2 = 7;
+						if (anArray[c2][d2] == wall)
+						{
+							d2 = d2 + 2;
+							ld2 = 8;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// LAST DIRECTION == UP
+
+	if (ld2 == 3)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // LEFT
+		{
+			dir = 1;
+			c2 = c2 - 2;
+			ld2 = 5;
+			if (anArray[c2][d2] == wall)
+			{
+				c2 = e2;
+				d2 = f2;
+				ld2 = 3;
+			}
+		}
+		if (random == 2) // RIGHT
+		{
+			dir = 2;
+			c2 = c2 + 2;
+			ld2 = 6;
+			if (anArray[c2][d2] == wall)
+			{
+				c2 = e2;
+				d2 = f2;
+				ld2 = 3;
+			}
+		}
+		if (e2 == c2)
+		{
+			if (f2 == d2)
+			{
+				d2 = d2 - 1; // UP
+				ld2 = 7;
+				if (anArray[c2][d2] == wall)
+				{
+					c2 = e2;
+					d2 = f2;
+					if (dir == 1) // RIGHT
+					{
+						c2 = c2 + 2;
+						ld2 = 6;
+						if (anArray[c2][d2] == wall)
+						{
+							c2 = c2 - 4;
+							ld2 = 5;
+						}
+					}
+					if (dir == 2) // LEFT
+					{
+						c2 = c2 - 2;
+						ld2 = 5;
+						if (anArray[c2][d2] == wall)
+						{
+							c2 = c2 + 4;
+							ld2 = 6;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// LAST DIRECTION == DOWN
+
+	if (ld2 == 4)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // LEFT
+		{
+			dir = 1;
+			c2 = c2 - 2;
+			ld2 = 5;
+			if (anArray[c2][d2] == wall)
+			{
+				c2 = e2;
+				d2 = f2;
+				ld2 = 4;
+			}
+		}
+		if (random == 2) // RIGHT
+		{
+			dir = 2;
+			c2 = c2 + 2;
+			ld2 = 6;
+			if (anArray[c2][d2] == wall)
+			{
+				c2 = e2;
+				d2 = f2;
+				ld2 = 4;
+			}
+		}
+		if (e2 == c2)
+		{
+			if (f2 == d2)
+			{
+				d2 = d2 + 1; // DOWN
+				ld2 = 8;
+				if (anArray[c2][d2] == wall)
+				{
+					c2 = e2;
+					d2 = f2;
+					if (dir == 1) // RIGHT
+					{
+						c2 = c2 + 2;
+						ld2 = 6;
+						if (anArray[c2][d2] == wall)
+						{
+							c2 = c2 - 4;
+							ld2 = 7;
+						}
+					}
+					if (dir == 2) // LEFT
+					{
+						c2 = c2 - 2;
+						ld2 = 5;
+						if (anArray[c2][d2] == wall)
+						{
+							c2 = c2 + 4;
+							ld2 = 6;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	if (anArray[c2][d2] == pel)
+	{
+		pg2 = 1;
+	}
+
+	anArray[c2][d2] = ghost;
+	if (ld2 == 5) // LEFT
+	{
+		ld2 = 1;
+	}
+	if (ld2 == 6) //RIGHT
+	{
+		ld2 = 2;
+	}
+	if (ld2 == 7) // UP
+	{
+		ld2 = 3;
+	}
+	if (ld2 == 8) // DOWN
+	{
+		ld2 = 4;
+	}
+}
+
+void Ghost3()
+{
+	e3 = c3;
+	f3 = d3;
+	if (pg3 == 0)
+	{
+		anArray[c3][d3] = 0;
+	}
+	if (pg3 == 1)
+	{
+		anArray[c3][d3] = pel;
+		pg3 = 0;
+	}
+
+	// LAST DIRECTION == LEFT
+
+	if (ld3 == 1)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // UP
+		{
+			dir = 1;
+			d3 = d3 - 1;
+			ld3 = 7;
+			if (anArray[c3][d3] == wall)
+			{
+				c3 = e3;
+				d3 = f3;
+				ld3 = 1;
+			}
+		}
+		if (random == 2) // DOWN
+		{
+			dir = 2;
+			d3 = d3 + 1;
+			ld3 = 8;
+			if (anArray[c3][d3] == wall)
+			{
+				c3 = e3;
+				d3 = f3;
+				ld3 = 1;
+			}
+		}
+		if (e3 == c3)
+		{
+			if (f3 == d3)
+			{
+				c3 = c3 - 2; // LEFT
+				ld3 = 5;
+				if (anArray[c3][d3] == wall)
+				{
+					c3 = e3;
+					d3 = f3;
+					if (dir == 1) // DOWN
+					{
+						d3 = d3 + 1;
+						ld3 = 8;
+						if (anArray[c3][d3] == wall)
+						{
+							d3 = d3 - 2;
+							ld3 = 7;
+						}
+					}
+					if (dir == 2) // UP
+					{
+						d3 = d3 - 1;
+						ld3 = 7;
+						if (anArray[c3][d3] == wall)
+						{
+							d3 = d3 + 2;
+							ld3 = 8;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	// LAST DIRECTION == RIGHT
+
+	if (ld3 == 2)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // UP
+		{
+			dir = 1;
+			d3 = d3 - 1;
+			ld3 = 7;
+			if (anArray[c3][d3] == wall)
+			{
+				c3 = e3;
+				d3 = f3;
+				ld3 = 2;
+			}
+		}
+		if (random == 2) // DOWN
+		{
+			dir = 2;
+			d3 = d3 + 1;
+			ld3 = 8;
+			if (anArray[c3][d3] == wall)
+			{
+				c3 = e3;
+				d3 = f3;
+				ld3 = 2;
+			}
+		}
+		if (e3 == c3)
+		{
+			if (f3 == d3)
+			{
+				c3 = c3 + 2; // RIGHT
+				ld3 = 6;
+				if (anArray[c3][d3] == wall)
+				{
+					c3 = e3;
+					d3 = f3;
+					if (dir == 1) // DOWN
+					{
+						d3 = d3 + 1;
+						ld3 = 8;
+						if (anArray[c3][d3] == wall)
+						{
+							d3 = d3 - 2;
+							ld3 = 7;
+						}
+					}
+					if (dir == 2) // UP
+					{
+						d3 = d3 - 1;
+						ld3 = 7;
+						if (anArray[c3][d3] == wall)
+						{
+							d3 = d3 + 2;
+							ld3 = 8;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// LAST DIRECTION == UP
+
+	if (ld3 == 3)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // LEFT
+		{
+			dir = 1;
+			c3 = c3 - 2;
+			ld3 = 5;
+			if (anArray[c3][d3] == wall)
+			{
+				c3 = e3;
+				d3 = f3;
+				ld3 = 3;
+			}
+		}
+		if (random == 2) // RIGHT
+		{
+			dir = 2;
+			c3 = c3 + 2;
+			ld3 = 6;
+			if (anArray[c3][d3] == wall)
+			{
+				c3 = e3;
+				d3 = f3;
+				ld3 = 3;
+			}
+		}
+		if (e3 == c3)
+		{
+			if (f3 == d3)
+			{
+				d3 = d3 - 1; // UP
+				ld3 = 7;
+				if (anArray[c3][d3] == wall)
+				{
+					c3 = e3;
+					d3 = f3;
+					if (dir == 1) // RIGHT
+					{
+						c3 = c3 + 2;
+						ld3 = 6;
+						if (anArray[c3][d3] == wall)
+						{
+							c3 = c3 - 4;
+							ld3 = 5;
+						}
+					}
+					if (dir == 2) // LEFT
+					{
+						c3 = c3 - 2;
+						ld3 = 5;
+						if (anArray[c3][d3] == wall)
+						{
+							c3 = c3 + 4;
+							ld3 = 6;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// LAST DIRECTION == DOWN
+
+	if (ld3 == 4)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // LEFT
+		{
+			dir = 1;
+			c3 = c3 - 2;
+			ld3 = 5;
+			if (anArray[c3][d3] == wall)
+			{
+				c3 = e3;
+				d3 = f3;
+				ld3 = 4;
+			}
+		}
+		if (random == 2) // RIGHT
+		{
+			dir = 2;
+			c3 = c3 + 2;
+			ld3 = 6;
+			if (anArray[c3][d3] == wall)
+			{
+				c3 = e3;
+				d3 = f3;
+				ld3 = 4;
+			}
+		}
+		if (e3 == c3)
+		{
+			if (f3 == d3)
+			{
+				d3 = d3 + 1; // DOWN
+				ld3 = 8;
+				if (anArray[c3][d3] == wall)
+				{
+					c3 = e3;
+					d3 = f3;
+					if (dir == 1) // RIGHT
+					{
+						c3 = c3 + 2;
+						ld3 = 6;
+						if (anArray[c3][d3] == wall)
+						{
+							c3 = c3 - 4;
+							ld3 = 7;
+						}
+					}
+					if (dir == 2) // LEFT
+					{
+						c3 = c3 - 2;
+						ld3 = 5;
+						if (anArray[c3][d3] == wall)
+						{
+							c3 = c3 + 4;
+							ld3 = 6;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	if (anArray[c3][d3] == pel)
+	{
+		pg3 = 1;
+	}
+
+	anArray[c3][d3] = ghost;
+	if (ld3 == 5) // LEFT
+	{
+		ld3 = 1;
+	}
+	if (ld3 == 6) //RIGHT
+	{
+		ld3 = 2;
+	}
+	if (ld3 == 7) // UP
+	{
+		ld3 = 3;
+	}
+	if (ld3 == 8) // DOWN
+	{
+		ld3 = 4;
+	}
+}
+
+void Ghost4()
+{
+	e4 = c4;
+	f4 = d4;
+	if (pg4 == 0)
+	{
+		anArray[c4][d4] = 0;
+	}
+	if (pg4 == 1)
+	{
+		anArray[c4][d4] = pel;
+		pg4 = 0;
+	}
+
+	// LAST DIRECTION == LEFT
+
+	if (ld4 == 1)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // UP
+		{
+			dir = 1;
+			d4 = d4 - 1;
+			ld4 = 7;
+			if (anArray[c4][d4] == wall)
+			{
+				c4 = e4;
+				d4 = f4;
+				ld4 = 1;
+			}
+		}
+		if (random == 2) // DOWN
+		{
+			dir = 2;
+			d4 = d4 + 1;
+			ld4 = 8;
+			if (anArray[c4][d4] == wall)
+			{
+				c4 = e4;
+				d4 = f4;
+				ld4 = 1;
+			}
+		}
+		if (e4 == c4)
+		{
+			if (f4 == d4)
+			{
+				c4 = c4 - 2; // LEFT
+				ld4 = 5;
+				if (anArray[c4][d4] == wall)
+				{
+					c4 = e4;
+					d4 = f4;
+					if (dir == 1) // DOWN
+					{
+						d4 = d4 + 1;
+						ld4 = 8;
+						if (anArray[c4][d4] == wall)
+						{
+							d4 = d4 - 2;
+							ld4 = 7;
+						}
+					}
+					if (dir == 2) // UP
+					{
+						d4 = d4 - 1;
+						ld4 = 7;
+						if (anArray[c4][d4] == wall)
+						{
+							d4 = d4 + 2;
+							ld4 = 8;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	// LAST DIRECTION == RIGHT
+
+	if (ld4 == 2)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // UP
+		{
+			dir = 1;
+			d4 = d4 - 1;
+			ld4 = 7;
+			if (anArray[c4][d4] == wall)
+			{
+				c4 = e4;
+				d4 = f4;
+				ld4 = 2;
+			}
+		}
+		if (random == 2) // DOWN
+		{
+			dir = 2;
+			d4 = d4 + 1;
+			ld4 = 8;
+			if (anArray[c4][d4] == wall)
+			{
+				c4 = e4;
+				d4 = f4;
+				ld4 = 2;
+			}
+		}
+		if (e4 == c4)
+		{
+			if (f4 == d4)
+			{
+				c4 = c4 + 2; // RIGHT
+				ld4 = 6;
+				if (anArray[c4][d4] == wall)
+				{
+					c4 = e4;
+					d4 = f4;
+					if (dir == 1) // DOWN
+					{
+						d4 = d4 + 1;
+						ld4 = 8;
+						if (anArray[c4][d4] == wall)
+						{
+							d4 = d4 - 2;
+							ld4 = 7;
+						}
+					}
+					if (dir == 2) // UP
+					{
+						d4 = d4 - 1;
+						ld4 = 7;
+						if (anArray[c4][d4] == wall)
+						{
+							d4 = d4 + 2;
+							ld4 = 8;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// LAST DIRECTION == UP
+
+	if (ld4 == 3)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // LEFT
+		{
+			dir = 1;
+			c4 = c4 - 2;
+			ld4 = 5;
+			if (anArray[c4][d4] == wall)
+			{
+				c4 = e4;
+				d4 = f4;
+				ld4 = 3;
+			}
+		}
+		if (random == 2) // RIGHT
+		{
+			dir = 2;
+			c4 = c4 + 2;
+			ld4 = 6;
+			if (anArray[c4][d4] == wall)
+			{
+				c4 = e4;
+				d4 = f4;
+				ld4 = 3;
+			}
+		}
+		if (e4 == c4)
+		{
+			if (f4 == d4)
+			{
+				d4 = d4 - 1; // UP
+				ld4 = 7;
+				if (anArray[c4][d4] == wall)
+				{
+					c4 = e4;
+					d4 = f4;
+					if (dir == 1) // RIGHT
+					{
+						c4 = c4 + 2;
+						ld4 = 6;
+						if (anArray[c4][d4] == wall)
+						{
+							c4 = c4 - 4;
+							ld4 = 5;
+						}
+					}
+					if (dir == 2) // LEFT
+					{
+						c4 = c4 - 2;
+						ld4 = 5;
+						if (anArray[c4][d4] == wall)
+						{
+							c4 = c4 + 4;
+							ld4 = 6;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// LAST DIRECTION == DOWN
+
+	if (ld4 == 4)
+	{
+		std::mt19937 generator;
+		generator.seed(std::time(0));
+		std::uniform_int_distribution<uint32_t> rnum(1, 2);
+		int random = rnum(generator); // GENERATES RANDOM NUM
+
+		if (random == 1) // LEFT
+		{
+			dir = 1;
+			c4 = c4 - 2;
+			ld4 = 5;
+			if (anArray[c4][d4] == wall)
+			{
+				c4 = e4;
+				d4 = f4;
+				ld4 = 4;
+			}
+		}
+		if (random == 2) // RIGHT
+		{
+			dir = 2;
+			c4 = c4 + 2;
+			ld4 = 6;
+			if (anArray[c4][d4] == wall)
+			{
+				c4 = e4;
+				d4 = f4;
+				ld4 = 4;
+			}
+		}
+		if (e4 == c4)
+		{
+			if (f4 == d4)
+			{
+				d4 = d4 + 1; // DOWN
+				ld4 = 8;
+				if (anArray[c4][d4] == wall)
+				{
+					c4 = e4;
+					d4 = f4;
+					if (dir == 1) // RIGHT
+					{
+						c4 = c4 + 2;
+						ld4 = 6;
+						if (anArray[c4][d4] == wall)
+						{
+							c4 = c4 - 4;
+							ld4 = 7;
+						}
+					}
+					if (dir == 2) // LEFT
+					{
+						c4 = c4 - 2;
+						ld4 = 5;
+						if (anArray[c4][d4] == wall)
+						{
+							c4 = c4 + 4;
+							ld4 = 6;
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	if (anArray[c4][d4] == pel)
+	{
+		pg4 = 1;
+	}
+
+	anArray[c4][d4] = ghost;
+	if (ld4 == 5) // LEFT
+	{
+		ld4 = 1;
+	}
+	if (ld4 == 6) //RIGHT
+	{
+		ld4 = 2;
+	}
+	if (ld4 == 7) // UP
+	{
+		ld4 = 3;
+	}
+	if (ld4 == 8) // DOWN
+	{
+		ld4 = 4;
+	}
+}
+
+void pBoard()
+{
+	for (int i = 0; i < 20; i++)
+	{
+		for (int o = 0; o < 61; o++)
+		{
+			cout << anArray[o][i];
+		}
+		cout << endl;
+	}
+}
+
+void pPel()
+{
+	//Setting Pellets on board
+	for (int i = 2; i < 18; i = i + 2)
+	{
+		anArray[2][i] = pel;
+		anArray[58][i] = pel;
+		anArray[14][i] = pel;
+		anArray[46][i] = pel;
+	}
+
+	for (int i = 4; i < 58; i = i + 4)
+	{
+		anArray[i][1] = pel;
+		anArray[i][18] = pel;
+	}
+
+	for (int i = 10; i < 52; i = i + 4)
+	{
+		anArray[i][3] = pel;
+		anArray[i][16] = pel;
+	}
+
+	for (int i = 4; i < 16; i = i + 2)
+	{
+		anArray[8][i] = pel;
+		anArray[52][i] = pel;
+	}
+
+	for (int i = 18; i < 46; i = i + 4)
+	{
+		anArray[i][5] = pel;
+		anArray[i][12] = pel;
+	}
+
+	for (int i = 7; i < 13; i = i + 3)
+	{
+		anArray[18][i] = pel;
+		anArray[22][i] = pel;
+		anArray[38][i] = pel;
+		anArray[42][i] = pel;
+	}
+}
+
+void menu()
+{		
+	system("color 06");
+	for (int i = 0; i < 2; i++)
+	{
+
+		system("cls");
+		cout << "\n\n";
+		cout << "                                                 0000000" << "\n";
+		cout << "                                            00000000000000000" << "\n";
+		cout << "                                        0000000000000000000000000" << "\n";
+		cout << "                                     0000000000000000000000000000000" << "\n";
+		cout << "                                  000000000000000000000000000000000000" << "\n";
+		cout << "                                00000000000000000000000000000000000000000" << "\n";
+		cout << "                               0000000000000000000000000000000000000000000" << "\n";
+		cout << "                              000000000000000000000000000000000000000000000" << "\n";
+		cout << "                             00000000000000000000000000000000000000000000000" << "\n";
+		cout << "                             00000000000000000000000000000000000000000000000" << "\n";
+		cout << "                            000000000000000000000000000000000000000000000000" << "\n";
+		cout << "                            000000000000000000000000000000000000000000000000" << "\n";
+		cout << "                             00000000000000000000000000000000000000000000000" << "\n";
+		cout << "                             00000000000000000000000000000000000000000000000" << "\n";
+		cout << "                              000000000000000000000000000000000000000000000" << "\n";
+		cout << "                               00000000000000000000000000000000000000000000" << "\n";
+		cout << "                                000000000000000000000000000000000000000000" << "\n";
+		cout << "                                 0000000000000000000000000000000000000000" << "\n";
+		cout << "                                   000000000000000000000000000000000000" << "\n";
+		cout << "                                     0000000000000000000000000000000" << "\n";
+		cout << "                                        0000000000000000000000000" << "\n";
+		cout << "                                            00000000000000000" << "\n";
+		cout << "                                                 0000000" << "\n";
+
+		std::this_thread::sleep_for(0.5s);
+		system("cls");
+		cout << "\n\n";
+		cout << "                                                 000000000000000" << "\n";
+		cout << "                                            000000000000000000000000" << "\n";
+		cout << "                                        0000000000000000000000000000000" << "\n";
+		cout << "                                     00000000000000000000000000000000000" << "\n";
+		cout << "                                   00000000000000000000000000000000000" << "\n";
+		cout << "                                 0000000000000000000000000000000000" << "\n";
+		cout << "                               0000000000000000000000000000000000" << "\n";
+		cout << "                              00000000000000000000000000000000" << "\n";
+		cout << "                             0000000000000000000000000000000" << "\n";
+		cout << "                             0000000000000000000000000000" << "\n";
+		cout << "                             00000000000000000000000000" << "\n";
+		cout << "                             000000000000000000000000" << "\n";
+		cout << "                             00000000000000000000000000" << "\n";
+		cout << "                              000000000000000000000000000" << "\n";
+		cout << "                              000000000000000000000000000000" << "\n";
+		cout << "                               0000000000000000000000000000000" << "\n";
+		cout << "                                00000000000000000000000000000000" << "\n";
+		cout << "                                 0000000000000000000000000000000000" << "\n";
+		cout << "                                   00000000000000000000000000000000000" << "\n";
+		cout << "                                     000000000000000000000000000000000000" << "\n";
+		cout << "                                        0000000000000000000000000000000" << "\n";
+		cout << "                                            000000000000000000000000" << "\n";
+		cout << "                                                 000000000000000" << "\n";
+		std::this_thread::sleep_for(0.5s);
+	}
+	system("color 09");
+	std::this_thread::sleep_for(0.1s);
+	system("color 06");
+	std::this_thread::sleep_for(0.1s);
+	system("color 09");
+	std::this_thread::sleep_for(0.1s);
+	system("color 06");
+	std::this_thread::sleep_for(0.1s);
+
+
+	system("cls");
+	gotoxy(15, 1);
+	cout << "   ______      __         _____          ___      ___         __          ___      __   ";
+	gotoxy(15, 2);
+	cout << "  |      \\    /  \\       |   __|        |    \\__/    |       /  \\        |    \\   |  |  ";
+	gotoxy(15, 3);
+	cout << "  |   <   |  / /\\ \\      |  |           |  |\\    /|  |      / /\\ \\       |  |\\  \\ |  |  ";
+	gotoxy(15, 4);
+	cout << "  |   ___/  /  __  \\     |  |           |  | \\__/ |  |     /  __  \\      |  | \\  \\|  |  ";
+	gotoxy(15, 5);
+	cout << "  |  |     /  /  \\  \\    |  |           |  |      |  |    /  /  \\  \\     |  |  \\     |  ";
+	gotoxy(15, 6);
+	cout << "  |  |    /  /    \\  \\   |  |__         |  |      |  |   /  /    \\  \\    |  |   \\    |  ";
+	gotoxy(15, 7);
+	cout << "  |__|   /__/      \\__\\  |_____|        |__|      |__|  /__/      \\__\\   |__|    \\___|  ";
+	gotoxy(35, 9);
+	cout << "Collect the pellets while avoiding the ghosts!";
+	gotoxy(38, 12);
+	cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+	gotoxy(38, 13);
+	cout << "|                                 |";
+	gotoxy(38, 14);
+	cout << "|                                 |";
+	gotoxy(38, 15);
+	cout << "|                                 |";
+	gotoxy(38, 16);
+	cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+	gotoxy(0, 18);
+	cout << "                                                      ___                                                  " << endl;
+	cout << "                           ______________            |/ \\|             ______________                      " << endl;
+	cout << "                          | USE THE ARROW|           |_|_|            |USE THE ESCAPE|                     " << endl;
+	cout << "                          |  KEYS TO MOVE|       ___  ___  ___        | KEY TO LEAVE |                     " << endl;
+	cout << "                          |______________|      |/__|| | ||__\\|       |______________|                     " << endl;
+	cout << "                                                |\\__||\\_/||__/|                                            ";
+	
+	gotoxy(15, 26);
+	cout << "Credits - Developed by Daniel Owen Clark 2019 - 2020 with C++ coding - visual studios 2019";
+	gotoxy(15, 28);
+	cout << "If there are any problems with this code please email 'IDontWantToHelpYou@Thanks.co.uk'";
+										   
+	gotoxy(40, 14);
+	system("Pause");
+}
+
+
+
+int main()
+{
+	menu();
+	system("color 08");
+	// Set board
+	anArray[a][b] = 60;
+	for (int i = 0; i < 60; i++)
+	{
+		anArray[i][0] = wall;
+	}
+	for (int i = 0; i < 20; i++)
+	{
+		anArray[0][i] = wall;
+	}
+	for (int i = 0; i < 20; i++)
+	{
+		anArray[60][i] = wall;
+	}
+	for (int i = 0; i < 60; i++)
+	{
+		anArray[i][19] = wall;
+	}
+	// Obsticles + Walls
+	//OB1  TL
+	anArray[4][2] = wall;
+	anArray[5][2] = wall;
+	anArray[6][2] = wall;
+	anArray[7][2] = wall;
+	anArray[8][2] = wall;
+	anArray[9][2] = wall;
+	anArray[10][2] = wall;
+	anArray[11][2] = wall;
+	anArray[12][2] = wall;
+	anArray[4][3] = wall;
+	anArray[5][3] = wall;
+	anArray[6][3] = wall;
+	anArray[4][4] = wall;
+	anArray[5][4] = wall;
+	anArray[6][4] = wall;
+	anArray[4][5] = wall;
+	anArray[5][5] = wall;
+	anArray[6][5] = wall;
+
+	//OB2 TR	
+	anArray[48][2] = wall;
+	anArray[49][2] = wall;
+	anArray[50][2] = wall;
+	anArray[51][2] = wall;
+	anArray[52][2] = wall;
+	anArray[53][2] = wall;
+	anArray[54][2] = wall;
+	anArray[55][2] = wall;
+	anArray[56][2] = wall;
+	anArray[54][3] = wall;
+	anArray[55][3] = wall;
+	anArray[56][3] = wall;
+	anArray[54][4] = wall;
+	anArray[55][4] = wall;
+	anArray[56][4] = wall;
+	anArray[54][5] = wall;
+	anArray[55][5] = wall;
+	anArray[56][5] = wall;
+
+	//OB3 BL
+	anArray[4][17] = wall;
+	anArray[5][17] = wall;
+	anArray[6][17] = wall;
+	anArray[7][17] = wall;
+	anArray[8][17] = wall;
+	anArray[9][17] = wall;
+	anArray[10][17] = wall;
+	anArray[11][17] = wall;
+	anArray[12][17] = wall;
+	anArray[4][16] = wall;
+	anArray[5][16] = wall;
+	anArray[6][16] = wall;
+	anArray[4][15] = wall;
+	anArray[5][15] = wall;
+	anArray[6][15] = wall;
+	anArray[4][14] = wall;
+	anArray[5][14] = wall;
+	anArray[6][14] = wall;
+
+	//OB4 BR	
+	anArray[48][17] = wall;
+	anArray[49][17] = wall;
+	anArray[50][17] = wall;
+	anArray[51][17] = wall;
+	anArray[52][17] = wall;
+	anArray[53][17] = wall;
+	anArray[54][17] = wall;
+	anArray[55][17] = wall;
+	anArray[56][17] = wall;
+	anArray[54][16] = wall;
+	anArray[55][16] = wall;
+	anArray[56][16] = wall;
+	anArray[54][15] = wall;
+	anArray[55][15] = wall;
+	anArray[56][15] = wall;
+	anArray[54][14] = wall;
+	anArray[55][14] = wall;
+	anArray[56][14] = wall;
+
+	//OB5 BOX
+	anArray[24][6] = wall;
+	anArray[25][6] = wall;
+	anArray[26][6] = wall;
+	anArray[27][6] = wall;
+	anArray[28][6] = wall;
+	anArray[29][6] = wall;
+	anArray[30][6] = wall;
+	anArray[31][6] = wall;
+	anArray[32][6] = wall;
+	anArray[33][6] = wall;
+	anArray[34][6] = wall;
+	anArray[35][6] = wall;
+	anArray[36][6] = wall;
+
+	anArray[24][11] = wall;
+	anArray[25][11] = wall;
+	anArray[26][11] = wall;
+	anArray[27][11] = wall;
+	anArray[28][11] = wall;
+	anArray[29][11] = wall;
+	anArray[30][11] = wall;
+	anArray[31][11] = wall;
+	anArray[32][11] = wall;
+	anArray[33][11] = wall;
+	anArray[34][11] = wall;
+	anArray[35][11] = wall;
+	anArray[36][11] = wall;
+
+	anArray[24][7] = wall;
+	anArray[24][8] = wall;
+	anArray[24][9] = wall;
+	anArray[24][10] = wall;
+	anArray[36][7] = wall;
+	anArray[36][8] = wall;
+	anArray[36][9] = wall;
+	anArray[36][10] = wall;
+
+	//OB6 Long L
+	anArray[10][4] = wall;
+	anArray[11][4] = wall;
+	anArray[12][4] = wall;
+	anArray[10][5] = wall;
+	anArray[11][5] = wall;
+	anArray[12][5] = wall;
+	anArray[10][6] = wall;
+	anArray[11][6] = wall;
+	anArray[12][6] = wall;
+	anArray[10][7] = wall;
+	anArray[11][7] = wall;
+	anArray[12][7] = wall;
+	anArray[10][8] = wall;
+	anArray[11][8] = wall;
+	anArray[12][8] = wall;
+
+	anArray[10][10] = wall;
+	anArray[11][10] = wall;
+	anArray[12][10] = wall;
+	anArray[10][11] = wall;
+	anArray[11][11] = wall;
+	anArray[12][11] = wall;
+	anArray[10][12] = wall;
+	anArray[11][12] = wall;
+	anArray[12][12] = wall;
+	anArray[10][13] = wall;
+	anArray[11][13] = wall;
+	anArray[12][13] = wall;
+	anArray[10][14] = wall;
+	anArray[11][14] = wall;
+	anArray[12][14] = wall;
+	anArray[10][15] = wall;
+	anArray[11][15] = wall;
+	anArray[12][15] = wall;
+
+	//OB7 Long R
+	anArray[50][4] = wall;
+	anArray[49][4] = wall;
+	anArray[48][4] = wall;
+	anArray[50][5] = wall;
+	anArray[49][5] = wall;
+	anArray[48][5] = wall;
+	anArray[50][6] = wall;
+	anArray[49][6] = wall;
+	anArray[48][6] = wall;
+	anArray[50][7] = wall;
+	anArray[49][7] = wall;
+	anArray[48][7] = wall;
+	anArray[50][8] = wall;
+	anArray[49][8] = wall;
+	anArray[48][8] = wall;
+
+	anArray[50][10] = wall;
+	anArray[49][10] = wall;
+	anArray[48][10] = wall;
+	anArray[50][11] = wall;
+	anArray[49][11] = wall;
+	anArray[48][11] = wall;
+	anArray[50][12] = wall;
+	anArray[49][12] = wall;
+	anArray[48][12] = wall;
+	anArray[50][13] = wall;
+	anArray[49][13] = wall;
+	anArray[48][13] = wall;
+	anArray[50][14] = wall;
+	anArray[49][14] = wall;
+	anArray[48][14] = wall;
+	anArray[50][15] = wall;
+	anArray[49][15] = wall;
+	anArray[48][15] = wall;
+
+	//OB8 ML
+	anArray[4][7] = wall;
+	anArray[5][7] = wall;
+	anArray[6][7] = wall;
+	anArray[4][8] = wall;
+	anArray[5][8] = wall;
+	anArray[6][8] = wall;
+	anArray[4][9] = wall;
+	anArray[5][9] = wall;
+	anArray[6][9] = wall;
+	anArray[4][10] = wall;
+	anArray[5][10] = wall;
+	anArray[6][10] = wall;
+	anArray[4][11] = wall;
+	anArray[5][11] = wall;
+	anArray[6][11] = wall;
+	anArray[4][12] = wall;
+	anArray[5][12] = wall;
+	anArray[6][12] = wall;
+
+	//OB9 MR
+
+	anArray[54][7] = wall;
+	anArray[55][7] = wall;
+	anArray[56][7] = wall;
+	anArray[54][8] = wall;
+	anArray[55][8] = wall;
+	anArray[56][8] = wall;
+	anArray[54][9] = wall;
+	anArray[55][9] = wall;
+	anArray[56][9] = wall;
+	anArray[54][10] = wall;
+	anArray[55][10] = wall;
+	anArray[56][10] = wall;
+	anArray[54][11] = wall;
+	anArray[55][11] = wall;
+	anArray[56][11] = wall;
+	anArray[54][12] = wall;
+	anArray[55][12] = wall;
+	anArray[56][12] = wall;
+
+	//OB9 BM T
+	anArray[20][13] = wall;
+	anArray[21][13] = wall;
+	anArray[22][13] = wall;
+	anArray[23][13] = wall;
+	anArray[24][13] = wall;
+	anArray[25][13] = wall;
+	anArray[26][13] = wall;
+	anArray[27][13] = wall;
+	anArray[28][13] = wall;
+	anArray[29][13] = wall;
+	anArray[30][13] = wall;
+	anArray[31][13] = wall;
+	anArray[32][13] = wall;
+	anArray[33][13] = wall;
+	anArray[34][13] = wall;
+	anArray[35][13] = wall;
+	anArray[36][13] = wall;
+	anArray[37][13] = wall;
+	anArray[38][13] = wall;
+	anArray[39][13] = wall;
+	anArray[40][13] = wall;
+
+	anArray[28][14] = wall;
+	anArray[29][14] = wall;
+	anArray[30][14] = wall;
+	anArray[31][14] = wall;
+	anArray[32][14] = wall;
+	anArray[28][15] = wall;
+	anArray[29][15] = wall;
+	anArray[30][15] = wall;
+	anArray[31][15] = wall;
+	anArray[32][15] = wall;
+
+	//OB10 BM 
+	anArray[16][17] = wall;
+	anArray[17][17] = wall;
+	anArray[18][17] = wall;
+	anArray[19][17] = wall;
+	anArray[20][17] = wall;
+	anArray[21][17] = wall;
+	anArray[22][17] = wall;
+	anArray[23][17] = wall;
+	anArray[24][17] = wall;
+	anArray[25][17] = wall;
+	anArray[26][17] = wall;
+	anArray[27][17] = wall;
+	anArray[28][17] = wall;
+
+	anArray[32][17] = wall;
+	anArray[33][17] = wall;
+	anArray[34][17] = wall;
+	anArray[35][17] = wall;
+	anArray[36][17] = wall;
+	anArray[37][17] = wall;
+	anArray[38][17] = wall;
+	anArray[39][17] = wall;
+	anArray[40][17] = wall;
+	anArray[41][17] = wall;
+	anArray[42][17] = wall;
+	anArray[43][17] = wall;
+	anArray[44][17] = wall;
+
+
+
+	//OB12 BRL
+	anArray[35][35] = wall;
+	anArray[36][35] = wall;
+	anArray[37][35] = wall;
+	anArray[38][35] = wall;
+	anArray[39][35] = wall;
+	anArray[40][35] = wall;
+	anArray[41][35] = wall;
+	anArray[42][35] = wall;
+	anArray[43][35] = wall;
+	anArray[43][34] = wall;
+	anArray[43][33] = wall;
+	anArray[43][32] = wall;
+	anArray[43][31] = wall;
+	anArray[43][30] = wall;
+
+	//OB13 BLL
+	anArray[23][35] = wall;
+	anArray[22][35] = wall;
+	anArray[21][35] = wall;
+	anArray[20][35] = wall;
+	anArray[19][35] = wall;
+	anArray[18][35] = wall;
+	anArray[17][35] = wall;
+	anArray[16][35] = wall;
+	anArray[15][35] = wall;
+	anArray[15][34] = wall;
+	anArray[15][33] = wall;
+	anArray[15][32] = wall;
+	anArray[15][31] = wall;
+	anArray[15][30] = wall;
+
+	//OB14 TLL
+	anArray[23][24] = wall;
+	anArray[22][24] = wall;
+	anArray[21][24] = wall;
+	anArray[20][24] = wall;
+	anArray[19][24] = wall;
+	anArray[18][24] = wall;
+	anArray[17][24] = wall;
+	anArray[16][24] = wall;
+	anArray[15][24] = wall;
+	anArray[15][25] = wall;
+	anArray[15][26] = wall;
+	anArray[15][27] = wall;
+	anArray[15][28] = wall;
+
+	//OB15 TRL
+	anArray[35][24] = wall;
+	anArray[36][24] = wall;
+	anArray[37][24] = wall;
+	anArray[38][24] = wall;
+	anArray[39][24] = wall;
+	anArray[40][24] = wall;
+	anArray[41][24] = wall;
+	anArray[42][24] = wall;
+	anArray[43][24] = wall;
+	anArray[43][25] = wall;
+	anArray[43][26] = wall;
+	anArray[43][27] = wall;
+	anArray[43][28] = wall;
+
+	//OB16 ML LINE
+	anArray[19][26] = wall;
+	anArray[19][27] = wall;
+	anArray[19][28] = wall;
+	anArray[19][29] = wall;
+	anArray[19][30] = wall;
+	anArray[19][31] = wall;
+
+	//OB17 MR LINE
+	anArray[39][26] = wall;
+	anArray[39][27] = wall;
+	anArray[39][28] = wall;
+	anArray[39][29] = wall;
+	anArray[39][30] = wall;
+	anArray[39][31] = wall;
+
+	//OB18 TM T
+	anArray[16][2] = wall;
+	anArray[17][2] = wall;
+	anArray[18][2] = wall;
+	anArray[19][2] = wall;
+	anArray[20][2] = wall;
+	anArray[21][2] = wall;
+	anArray[22][2] = wall;
+	anArray[23][2] = wall;
+	anArray[24][2] = wall;
+	anArray[25][2] = wall;
+	anArray[26][2] = wall;
+	anArray[27][2] = wall;
+	anArray[28][2] = wall;
+	anArray[29][2] = wall;
+	anArray[30][2] = wall;
+	anArray[31][2] = wall;
+	anArray[32][2] = wall;
+	anArray[33][2] = wall;
+	anArray[34][2] = wall;
+	anArray[35][2] = wall;
+	anArray[36][2] = wall;
+	anArray[37][2] = wall;
+	anArray[38][2] = wall;
+	anArray[39][2] = wall;
+	anArray[40][2] = wall;
+	anArray[41][2] = wall;
+	anArray[42][2] = wall;
+	anArray[43][2] = wall;
+	anArray[44][2] = wall;
+
+	pPel();
+
+	do
+	{
+		control();
+		Ghost();
+		Ghost2();
+		Ghost3();
+		Ghost4();
+
+		system("cls");
+		gotoxy(62, 1);
+		cout << "Score = " << score;
+		gotoxy(62, 2);
+		cout << "Remaining Pellets = " << pCount;
+		gotoxy(62, 3);
+		cout << "Lives = " << lives;
+		gotoxy(0, 0);
+
+		if (pCount == 0) // WIN STATE 
+		{
+			system("color 09");
+			std::this_thread::sleep_for(0.1s);
+			system("color 06");
+			std::this_thread::sleep_for(0.1s);
+			system("color 09");
+			std::this_thread::sleep_for(0.1s);
+			system("color 06");
+			std::this_thread::sleep_for(0.1s);
+
+			a = 30;
+			b = 4;
+			c1 = 30;
+			d1 = 16;
+			c2 = 12;
+			d2 = 9;
+			c3 = 48;
+			d3 = 9;
+			c4 = 30;
+			d4 = 1;
+			anArray[a][b] = 60;
+			anArray[c1][d1] = ghost;
+			anArray[c2][d2] = ghost;
+			anArray[c3][d3] = ghost;
+			anArray[c4][d4] = ghost;
+			pPel();
+		}
+
+		if (anArray[a][b] == ghost)
+		{
+			pBoard();
+			system("cls");
+			anArray[a][b] = 196;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 62;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 179;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 60;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 196;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 177;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 176;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 0;
+			pBoard();
+			std::this_thread::sleep_for(1s);
+			system("cls");
+
+			lives = lives - 1;
+
+			if (pg1 == 0)
+			{
+				anArray[c1][d1] = 0;
+			}
+			if (pg1 == 1)
+			{
+				anArray[c1][d1] = pel;
+				pg1 = 0;
+			}
+
+
+			if (pg2 == 0)
+			{
+				anArray[c2][d2] = 0;
+			}
+			if (pg2 == 1)
+			{
+				anArray[c2][d2] = pel;
+				pg2 = 0;
+			}
+
+
+			if (pg3 == 0)
+			{
+				anArray[c3][d3] = 0;
+			}
+			if (pg3 == 1)
+			{
+				anArray[c3][d3] = pel;
+				pg3 = 0;
+			}
+
+
+			if (pg4 == 0)
+			{
+				anArray[c4][d4] = 0;
+			}
+			if (pg4 == 1)
+			{
+				anArray[c4][d4] = pel;
+				pg4 = 0;
+			}
+
+
+			a = 30;
+			b = 4;
+			c1 = 30;
+			d1 = 16;
+			c2 = 12;
+			d2 = 9;
+			c3 = 48;
+			d3 = 9;
+			c4 = 30;
+			d4 = 1;
+			anArray[a][b] = 60;
+			anArray[c1][d1] = ghost;
+			anArray[c2][d2] = ghost;
+			anArray[c3][d3] = ghost;
+			anArray[c4][d4] = ghost;
+		}
+
+		if (a == e1 and b == f1 or a == e2 and b == f2 or a == e3 and b == f3 or a == e4 and b == f4)
+		{
+			pBoard();
+			anArray[c1][d1] = 0;
+			system("cls");
+			anArray[a][b] = 196;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 62;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 179;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 60;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 196;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 177;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 176;
+			pBoard();
+			std::this_thread::sleep_for(0.3s);
+			system("cls");
+
+			anArray[a][b] = 0;
+			pBoard();
+			std::this_thread::sleep_for(1s);
+			system("cls");
+
+			lives = lives - 1;
+
+
+			if (pg1 == 0)
+			{
+				anArray[c1][d1] = 0;
+			}
+			if (pg1 == 1)
+			{
+				anArray[c1][d1] = pel;
+				pg1 = 0;
+			}
+
+
+			if (pg2 == 0)
+			{
+				anArray[c2][d2] = 0;
+			}
+			if (pg2 == 1)
+			{
+				anArray[c2][d2] = pel;
+				pg2 = 0;
+			}
+
+
+			if (pg3 == 0)
+			{
+				anArray[c3][d3] = 0;
+			}
+			if (pg3 == 1)
+			{
+				anArray[c3][d3] = pel;
+				pg3 = 0;
+			}
+
+
+			if (pg4 == 0)
+			{
+				anArray[c4][d4] = 0;
+			}
+			if (pg4 == 1)
+			{
+				anArray[c4][d4] = pel;
+				pg4 = 0;
+			}
+
+
+			a = 30;
+			b = 4;
+			c1 = 30;
+			d1 = 16;
+			c2 = 12;
+			d2 = 9;
+			c3 = 48;
+			d3 = 9;
+			c4 = 30;
+			d4 = 1;
+			anArray[a][b] = 60;
+			anArray[c1][d1] = ghost;
+			anArray[c2][d2] = ghost;
+			anArray[c3][d3] = ghost;
+			anArray[c4][d4] = ghost;
+		}
+
+		if (lives == 0)
+		{
+			break;
+		}
+
+
+		if (pCount == 0)
+		{
+			pCount = 109;
+			pPel();
+		}
+
+		pBoard();
+		system("pause");
+
+		//std::this_thread::sleep_for(0.5s);
+	} while (true);
+
+	system("cls");
+	gotoxy(0, 2);
+	cout << " _______        ____        __      __    ________          _______    _         _     ________    _________            ";
+	gotoxy(0, 3);
+	cout << "|  _____|      /    \\      |  \\    /  |  |  ______|        |  ___  |  \\ \\       / /   |  ______|  |    ___  \\           ";
+	gotoxy(0, 4);
+	cout << "| |  ___      /  /\\  \\     |   \\  /   |  | |___            | |   | |   \\ \\     / /    | |___      |   |___\\  |          ";
+	gotoxy(0, 5);
+	cout << "| | |_  |    /        \\    | |\\ \\/ /| |  |  ___|           | |   | |    \\ \\   / /     |  ___|     |   _    _/           ";
+	gotoxy(0, 6);
+	cout << "| |__|  |   /    /\\    \\   | | \\__/ | |  | |______         | |___| |     \\ \\_/ /      | |______   |  | \\   \\       __   ";
+	gotoxy(0, 7);
+	cout << "|_______|  /___ /  \\ ___\\  |_|      |_|  |________|        |_______|      \\___/       |________|  |__|  \\___\\     |__|  ";
+	gotoxy(50, 10);
+	cout << "Score = " << score;
+	gotoxy(43, 12);
+	system("pause");
+}
+
+void gotoxy(int x, int y)
+{
+	HWND hCon = (HWND)GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD coord;
+	coord.X = x;
+	coord.Y = y;
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
